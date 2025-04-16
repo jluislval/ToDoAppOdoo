@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_todo_tag_user,todo.tag.user,model_todo_tag,group_todo_user,1,0,0,0
+access_todo_tag_admin,todo.tag.admin,model_todo_tag,group_todo_manager,1,1,1,1
+access_todo_task_user,todo.task.user,model_todo_task,group_todo_user,1,1,1,0
+access_todo_task_admin,todo.task.admin,model_todo_task,group_todo_manager,1,1,1,1

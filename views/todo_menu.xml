@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú raíz para la aplicación -->
+    <menuitem id="menu_todo_root"
+              name="ToDo"
+              sequence="10"
+              web_icon="todoApp,static/description/icon.png"/>
+
+    <!-- Submenús -->
+    <menuitem id="menu_todo_task"
+              name="Tareas"
+              parent="menu_todo_root"
+              action="action_todo_task"
+              sequence="10"/>
+
+    <menuitem id="menu_todo_configuration"
+              name="Configuración"
+              parent="menu_todo_root"
+              sequence="100"
+              groups="group_todo_manager"/>
+
+    <!-- Elemento de menú para etiquetas (completo para administradores) -->
+    <menuitem id="menu_todo_tag_admin"
+              name="Gestionar Etiquetas"
+              parent="menu_todo_root"
+              action="action_todo_tag_admin"
+              groups="group_todo_manager"
+              sequence="21"/>
+</odoo>
