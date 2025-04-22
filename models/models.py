@@ -3,11 +3,6 @@
 from odoo import models, fields, api
 from datetime import datetime
 
-
-from odoo import models, fields, api
-from odoo.exceptions import UserError
-
-
 class TodoTask(models.Model):
     _name = 'todo.task'
     _description = 'Tarea por hacer'
@@ -42,6 +37,17 @@ class TodoTask(models.Model):
         digits=(5, 2),
         help='Porcentaje de finalización de la tarea (0-100%)'
     )
+
+    # Añadir en la clase TodoTask
+    status_id = fields.Many2one(
+        'todo.status',
+        string='Estado',
+        tracking=True,
+        index=True,
+        copy=False,
+        help="Estado actual de la tarea"
+    )
+    etapa_id = fields.Many2one('todo.etapa', string='Etapa')
 
     # Método para contar subtareas
     @api.depends('subtask_ids')
@@ -123,7 +129,20 @@ class TodoTask(models.Model):
             },
         }
 
+class TodoStatus(models.Model):
+    _name = 'todo.status'
+    _description = 'Estado de la Tarea'
+    _order = 'sequence, id'
 
+    name = fields.Char('Nombre', required=True)
+    description = fields.Text('Descripción')
+    color = fields.Integer('Color', default=0)
+    sequence = fields.Integer('Secuencia', default=10)
+    active = fields.Boolean('Activo', default=True)
+
+    _sql_constraints = [
+        ('name_unique', 'UNIQUE(name)', 'El nombre del estado debe ser único.')
+    ]
 
 class TodoTag(models.Model):
     _name = 'todo.tag'
@@ -132,3 +151,38 @@ class TodoTag(models.Model):
     name = fields.Char('Nombre', required=True)
     color = fields.Char('Color', default="1")  # Valor por defecto negro
 
+class TodoDashboard(models.Model):
+    _name = 'todo.dashboard'
+    _description = 'Dashboard de Tareas'
+
+    name = fields.Char('Nombre', required=True)
+    description = fields.Text('Descripción')
+    active = fields.Boolean('Activo', default=True)
+    user_ids = fields.Many2many('res.users', string='Usuarios')
+    etapa_ids = fields.One2many('todo.etapa', 'dashboard_id', string='Etapas')
+
+    def action_view_etapas(self):
+        self.ensure_one()
+        return {
+            'name': 'Tablero: ' + self.name,
+            'type': 'ir.actions.act_window',
+            'res_model': 'todo.task',
+            'view_mode': 'kanban,tree,form',
+            'domain': [('etapa_id.dashboard_id', '=', self.id)],
+            'context': {
+                'default_dashboard_id': self.id,
+                'group_by': 'etapa_id',
+            }
+        }
+
+class TodoEtapa(models.Model):
+    _name = 'todo.etapa'
+    _description = 'Etapas de Tareas'
+    _order = 'sequence'
+
+    name = fields.Char('Nombre', required=True)
+    sequence = fields.Integer('Secuencia', default=10)
+    dashboard_id = fields.Many2one('todo.dashboard', string='Dashboard', required=True)
+    task_ids = fields.One2many('todo.task', 'etapa_id', string='Tareas')
+    fold = fields.Boolean('Plegada')
+    active = fields.Boolean('Activo', default=True)

@@ -18,8 +18,10 @@
         'security/todoapp_security.xml',
         'security/ir.model.access.csv',
         'views/todo_view.xml',
+        'views/dashboard_view.xml',
         'views/todo_menu.xml',
-        'views/templates.xml'
+        'data/todo_status_data.xml',
+
     ],
     'demo': [],
     'installable': True,

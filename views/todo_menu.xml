@@ -14,16 +14,37 @@
               sequence="10"/>
 
     <menuitem id="menu_todo_configuration"
-              name="Configuración"
-              parent="menu_todo_root"
-              sequence="100"
-              groups="group_todo_manager"/>
+          name="Configuración"
+          parent="menu_todo_root"
+          sequence="100"/>
+
+    <menuitem id="menu_todo_status"
+              name="Estados"
+              parent="menu_todo_configuration"
+              action="action_todo_status"
+              sequence="10"/>
 
     <!-- Elemento de menú para etiquetas (completo para administradores) -->
     <menuitem id="menu_todo_tag_admin"
               name="Gestionar Etiquetas"
-              parent="menu_todo_root"
+              parent="menu_todo_configuration"
               action="action_todo_tag_admin"
               groups="group_todo_manager"
               sequence="21"/>
+
+    <!-- Elemento de menú para Dashboards -->
+    <menuitem id="menu_todo_dashboard"
+              name="Dashboards"
+              parent="menu_todo_root"
+              action="action_todo_dashboard"
+              sequence="5"/>
+
+    <!-- Elemento de menú para Etapas -->
+    <menuitem id="menu_todo_etapa"
+              name="Etapas"
+              parent="menu_todo_configuration"
+              action="action_todo_etapa"
+              sequence="10"/>
+
+
 </odoo>

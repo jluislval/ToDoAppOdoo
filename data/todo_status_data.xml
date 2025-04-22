@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Estados predeterminados para tareas -->
+        <record id="todo_status_new" model="todo.status">
+            <field name="name">Nuevo</field>
+            <field name="description">Tarea recién creada</field>
+            <field name="sequence">10</field>
+            <field name="color">1</field>
+        </record>
+
+        <record id="todo_status_in_progress" model="todo.status">
+            <field name="name">En Progreso</field>
+            <field name="description">Tarea en proceso de ejecución</field>
+            <field name="sequence">20</field>
+            <field name="color">4</field>
+        </record>
+
+        <record id="todo_status_pending" model="todo.status">
+            <field name="name">Backlog</field>
+            <field name="description">Tarea en espera de información o acción externa</field>
+            <field name="sequence">30</field>
+            <field name="color">3</field>
+        </record>
+
+        <record id="todo_status_completed" model="todo.status">
+            <field name="name">Completada</field>
+            <field name="description">Tarea finalizada</field>
+            <field name="sequence">40</field>
+            <field name="color">10</field>
+            <field name="fold">True</field>
+        </record>
+
+        <record id="todo_status_canceled" model="todo.status">
+            <field name="name">Cancelada</field>
+            <field name="description">Tarea cancelada</field>
+            <field name="sequence">50</field>
+            <field name="color">9</field>
+            <field name="fold">True</field>
+        </record>
+    </data>
+</odoo>

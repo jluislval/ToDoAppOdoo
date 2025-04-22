@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de árbol para Dashboard -->
+    <record id="view_todo_dashboard_tree" model="ir.ui.view">
+        <field name="name">todo.dashboard.tree</field>
+        <field name="model">todo.dashboard</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="user_ids" widget="many2many_tags"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista de formulario para Dashboard -->
+    <record id="view_todo_dashboard_form" model="ir.ui.view">
+        <field name="name">todo.dashboard.form</field>
+        <field name="model">todo.dashboard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="description"/>
+                        <field name="active"/>
+                        <field name="user_ids" widget="many2many_tags"/>
+                    </group>
+                    <notebook>
+                        <page string="Etapas">
+                            <field name="etapa_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="fold"/>
+                                    <field name="active"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Kanban para Dashboard -->
+    <!-- Vista Kanban para Dashboard con Etapas y Tareas -->
+    <record id="view_todo_dashboard_kanban" model="ir.ui.view">
+        <field name="name">todo.dashboard.kanban</field>
+        <field name="model">todo.dashboard</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard" create="0">
+                <field name="name"/>
+                <field name="user_ids"/>
+                <field name="etapa_ids"/>
+                <field name="id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click o_kanban_record_has_image_fill">
+                            <div class="oe_kanban_details">
+                                <h4><field name="name"/></h4>
+                                <div>
+                                    <field name="user_ids" widget="many2many_tags"/>
+                                </div>
+                                <div class="mt-3">
+                                    <button name="action_view_etapas" type="object" class="btn btn-primary">
+                                        Ver tablero completo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Nueva vista de tablero (Kanban por etapas) -->
+    <record id="view_todo_board_kanban" model="ir.ui.view">
+        <field name="name">todo.dashboard.board.kanban</field>
+        <field name="model">todo.etapa</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="dashboard_id" class="o_kanban_small_column" create="0"
+                    group_create="0" group_delete="0" quick_create="0">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="dashboard_id"/>
+                <field name="sequence"/>
+                <field name="fold"/>
+                <field name="task_ids"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top mb-0">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <field name="task_ids" widget="kanban_activity"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vista Kanban para tareas dentro de etapas -->
+    <record id="view_todo_task_kanban" model="ir.ui.view">
+        <field name="name">todo.task.kanban</field>
+        <field name="model">todo.task</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="etapa_id" records_draggable="1">
+                <field name="name"/>
+                <field name="etapa_id"/>
+                <field name="user_id"/>
+                <field name="priority"/>
+                <field name="is_done"/>
+                <field name="deadline"/>
+                <field name="tag_ids"/>
+                <field name="subtask_count"/>
+                <field name="completion_rate"/>
+                <progressbar field="completion_rate" colors='{"0": "danger", "50": "warning", "100": "success"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click #{record.is_done.raw_value ? 'oe_kanban_color_5' : ''}">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <div class="o_dropdown_kanban dropdown">
+                                        <field name="priority" widget="priority"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                    <div t-if="record.deadline.raw_value">
+                                        <strong>Fecha límite:</strong> <field name="deadline"/>
+                                    </div>
+                                    <div t-if="record.subtask_count.raw_value > 0">
+                                        <strong>Subtareas:</strong> <field name="completion_rate"/>% completado
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="user_id" widget="many2one_avatar_user"/>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <button t-if="!record.is_done.raw_value" name="action_done" type="object" class="btn btn-sm btn-success">
+                                            <i class="fa fa-check"/> Completar
+                                        </button>
+                                        <button t-if="record.is_done.raw_value" name="action_undone" type="object" class="btn btn-sm btn-warning">
+                                            <i class="fa fa-undo"/> Reabrir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+
+     <!-- Vista de árbol para Etapas -->
+    <record id="view_todo_etapa_tree" model="ir.ui.view">
+        <field name="name">todo.etapa.tree</field>
+        <field name="model">todo.etapa</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="dashboard_id"/>
+                <field name="fold"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista de formulario para Etapas -->
+    <record id="view_todo_etapa_form" model="ir.ui.view">
+        <field name="name">todo.etapa.form</field>
+        <field name="model">todo.etapa</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="dashboard_id"/>
+                        <field name="fold"/>
+                        <field name="active"/>
+                    </group>
+                    <notebook>
+                        <page string="Tareas">
+                            <field name="task_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_todo_task_dashboard_kanban" model="ir.ui.view">
+        <field name="name">todo.task.dashboard.kanban</field>
+        <field name="model">todo.task</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="etapa_id" class="o_kanban_small_column" on_create="quick_create">
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="priority"/>
+                <field name="etapa_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div><b><field name="name"/></b></div>
+                                <div>
+                                    <field name="priority" widget="priority"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Acción para Dashboard -->
+    <record id="action_todo_dashboard" model="ir.actions.act_window">
+        <field name="name">Dashboards</field>
+        <field name="res_model">todo.dashboard</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+
+    <!-- Acción para ver las etapas y tareas de un dashboard específico -->
+    <record id="action_todo_dashboard_board" model="ir.actions.act_window">
+        <field name="name">Tablero de tareas</field>
+        <field name="res_model">todo.task</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{'search_default_dashboard_id': active_id, 'default_dashboard_id': active_id}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay tareas para este dashboard.
+            </p>
+            <p>
+                Crea una nueva tarea para comenzar a organizar tu trabajo.
+            </p>
+        </field>
+    </record>
+
+    <!-- Acción para Etapas -->
+    <record id="action_todo_etapa" model="ir.actions.act_window">
+        <field name="name">Etapas</field>
+        <field name="res_model">todo.etapa</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+
+</odoo>

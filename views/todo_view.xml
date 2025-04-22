@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <!-- Vista de formulario para tareas -->
     <record id="view_form_todo_task" model="ir.ui.view">
         <field name="name">Todo Task Form</field>
@@ -26,15 +27,29 @@
                             <field name="is_done"/>
                             <field name="user_id"/>
                             <field name="deadline"/>
+                            <field name="status_id" options="{'no_create': False, 'no_open': False}"/>
                         </group>
                         <group>
                             <field name="priority"/>
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="etapa_id"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Descripción">
                             <field name="description" placeholder="Añadir descripción detallada..."/>
+                        </page>
+                        <page string="Subtareas">
+                            <field name="subtask_ids" mode="tree" context="{'default_parent_id': active_id}">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="is_done"/>
+                                    <field name="priority"/>
+                                    <field name="user_id"/>
+                                    <field name="deadline"/>
+                                    <field name="completion_rate" widget="percentage"/>
+                                </tree>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
@@ -44,23 +59,98 @@
 
     <!-- Vista de árbol para tareas -->
     <record id="view_tree_todo_task" model="ir.ui.view">
-    <field name="name">todo.task.tree</field>
-    <field name="model">todo.task</field>
-    <field name="arch" type="xml">
-        <tree decoration-muted="is_done" decoration-success="is_done" decoration-danger="deadline and deadline &lt; current_date and not is_done">>
-            <field name="name"/>
-            <field name="deadline"/>
-            <field name="is_done"/>
-            <field name="priority"/>
-            <field name="user_id"/>
-            <field name="subtask_count"/>
-            <field name="completion_rate" widget="percentage"/>
-            <field name="parent_id" invisible="1"/>
-            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+        <field name="name">todo.task.tree</field>
+        <field name="model">todo.task</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="deadline"/>
+                <field name="is_done"/>
+                <field name="priority"/>
+                <field name="status_id"/>
+                <field name="user_id"/>
+                <field name="subtask_count"/>
+                <field name="completion_rate" widget="percentage"/>
+                <field name="parent_id" invisible="1"/>
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+            </tree>
+        </field>
+    </record>
 
-        </tree>
-    </field>
-</record>
+    <!-- Vista Kanban para tareas -->
+    <record id="view_kanban_todo_task" model="ir.ui.view">
+        <field name="name">todo.task.kanban</field>
+        <field name="model">todo.task</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="user_id" class="o_kanban_small_column"
+                    records_draggable="0" group_create="false">
+                <field name="name"/>
+                <field name="priority"/>
+                <field name="user_id"/>
+                <field name="subtask_count"/>
+                <field name="is_done"/>
+                <field name="tag_ids"/>
+                <field name="status_id"/>
+
+                <!-- Definir colores según el estado -->
+                <progressbar field="is_done" colors='{"False": "danger", "True": "success"}'/>
+
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click
+                            #{record.is_done.raw_value ? 'oe_kanban_color_5' : ''}">
+
+                            <!-- Contenido principal -->
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="name"/>
+                                    </strong>
+                                </div>
+                                <div class="o_dropdown_kanban dropdown">
+                                    <field name="priority" widget="priority"/>
+                                </div>
+                            </div>
+
+                            <!-- Contenido de la tarjeta -->
+                            <div class="o_kanban_record_body">
+                                <div t-if="record.status_id.value" class="o_kanban_record_status">
+                                    <span t-attf-class="badge badge-pill badge-#{record.status_id.raw_value[1]}">
+                                        <field name="status_id"/>
+                                    </span>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-6">
+                                        <strong>Subtareas:</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="badge badge-pill badge-info float-right">
+                                            <field name="subtask_count"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pie de la tarjeta -->
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left">
+                                    <span t-if="record.is_done.raw_value" class="badge badge-success">
+                                        <i class="fa fa-check-circle"></i> Completada
+                                    </span>
+                                    <span t-else="" class="badge badge-warning">
+                                        <i class="fa fa-clock-o"></i> Pendiente
+                                    </span>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
 
     <!-- Vista de búsqueda para tareas -->
     <record id="view_search_todo_task" model="ir.ui.view">
@@ -71,7 +161,10 @@
                 <field name="name"/>
                 <field name="user_id"/>
                 <field name="tag_ids"/>
+                <field name="status_id"/>
                 <separator/>
+                <filter string="Estado" name="groupby_status" context="{'group_by': 'status_id'}"/>
+
                 <filter string="Mis Tareas" name="my_tasks" domain="[('user_id', '=', uid)]"/>
                 <filter string="Completadas" name="done" domain="[('is_done', '=', True)]"/>
                 <filter string="Pendientes" name="not_done" domain="[('is_done', '=', False)]"/>
@@ -156,7 +249,7 @@
     </field>
 </record>
 
-       <!-- Vista kanban para etiquetas -->
+    <!-- Vista kanban para etiquetas -->
     <record id="view_todo_tag_kanban" model="ir.ui.view">
         <field name="name">todo.tag.kanban</field>
         <field name="model">todo.tag</field>
@@ -176,7 +269,7 @@
     </record>
 
     <!-- Vista de árbol para etiquetas con botones condicionados -->
-    <record id="view_tree_todo_tag" model="ir.ui.view">
+    <record id="view_tree_tag" model="ir.ui.view">
         <field name="name">Todo Tag Tree</field>
         <field name="model">todo.tag</field>
         <field name="arch" type="xml">
@@ -187,12 +280,50 @@
         </field>
     </record>
 
+    <record id="view_form_todo_status" model="ir.ui.view">
+        <field name="name">todo.status.form</field>
+        <field name="model">todo.status</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="color" widget="color"/>
+                        <field name="active"/>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_tree_todo_status" model="ir.ui.view">
+    <field name="name">todo.status.tree</field>
+        <field name="model">todo.status</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_todo_status" model="ir.actions.act_window">
+        <field name="name">Estados</field>
+        <field name="res_model">todo.status</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
     <!-- Acciones de ventana -->
     <record id="action_todo_task" model="ir.actions.act_window">
         <field name="name">Tareas</field>
         <field name="res_model">todo.task</field>
-        <field name="view_mode">tree,form</field>
-        <field name="context">{'search_default_open_tasks': 1}</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{'search_default_not_done': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Crea tu primera tarea
@@ -202,6 +333,7 @@
             </p>
         </field>
     </record>
+
     <record id="action_subtask" model="ir.actions.act_window">
         <field name="name">Subtareas</field>
         <field name="res_model">todo.task</field>
@@ -209,6 +341,7 @@
         <field name="domain">[('parent_id', '=', active_id)]</field>
         <field name="context">{'default_parent_id': active_id}</field>
     </record>
+
     <!-- Modificar la acción para administradores -->
     <record id="action_todo_tag_admin" model="ir.actions.act_window">
         <field name="name">Etiquetas de tareas</field>

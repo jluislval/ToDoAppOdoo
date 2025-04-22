@@ -3,3 +3,9 @@ access_todo_tag_user,todo.tag.user,model_todo_tag,group_todo_user,1,0,0,0
 access_todo_tag_admin,todo.tag.admin,model_todo_tag,group_todo_manager,1,1,1,1
 access_todo_task_user,todo.task.user,model_todo_task,group_todo_user,1,1,1,0
 access_todo_task_admin,todo.task.admin,model_todo_task,group_todo_manager,1,1,1,1
+access_todo_status_user,todo.status.user,model_todo_status,base.group_user,1,0,0,0
+access_todo_status_manager,todo.status.manager,model_todo_status,base.group_system,1,1,1,1
+access_todo_dashboard_user,todo.dashboard.user,model_todo_dashboard,todoApp.group_todo_user,1,1,1,0
+access_todo_dashboard_manager,todo.dashboard.manager,model_todo_dashboard,todoApp.group_todo_manager,1,1,1,1
+access_todo_etapa_user,todo.etapa.user,model_todo_etapa,todoApp.group_todo_user,1,1,1,0
+access_todo_etapa_manager,todo.etapa.manager,model_todo_etapa,todoApp.group_todo_manager,1,1,1,1
